@@ -37,7 +37,7 @@ fr_tag = fr[(fr >= 0.01) & (fr <= 0.25)]
 lettersize = 20
 fig1 = plt.figure(1)
 plt.loglog(fr_tag,empirical_psd)
-plt.xlabel('Freq')
+plt.xlabel('Freq (Hz)')
 plt.ylabel('Power (Index)')
 plt.ylim(0.8, 11)
 plt.tight_layout()
@@ -167,7 +167,6 @@ plt.ylabel('Scaled psd')
 #plt.legend()
 plt.title('Scaled psd Relative to Mean(psd)')
 plt.tight_layout()
-plt.show()
 
 from matplotlib.colors import Normalize
 from matplotlib.cm import get_cmap
@@ -181,7 +180,7 @@ lines = plt.loglog(fr_tag,empirical_psd) #, color=np.squeeze(control_param), cma
 # assign colors (a tiny loop; still O(K))
 for ln, c in zip(lines, colors):
     ln.set_color(c)
-plt.xlabel('Freq', fontsize=lettersize)
+plt.xlabel('Freq (Hz)', fontsize=lettersize)
 plt.ylabel('Power (Index)', fontsize=lettersize)
 plt.xticks(fontsize=lettersize)
 plt.yticks(fontsize=lettersize)
@@ -196,7 +195,7 @@ plt.figure(6, figsize=(8, 6))
 lines = plt.loglog(fr_tag, psd_collapsed_org)
 for ln, c in zip(lines, colors):
     ln.set_color(c)
-plt.xlabel('Freq', fontsize=lettersize)
+plt.xlabel('Freq (Hz)', fontsize=lettersize)
 plt.ylabel('Power (Index)', fontsize=lettersize)
 plt.ylim(0.8, 11)
 plt.xticks(fontsize=lettersize)
@@ -204,6 +203,129 @@ plt.yticks(fontsize=lettersize)
 plt.tight_layout()
 plt.show()
 #plt.savefig('xyz')
+
+from matplotlib import cm, colors as mcolors
+
+def plot_empirical_vs_analytical_psds(fr_tag, empirical_psd, analytical_psd, control_param, ylabel="PSD",
+    xlabel="Freq (Hz)", cmap="jet", empirical_alpha=0.18, analytical_alpha=0.95, empirical_lw=1.0,
+    analytical_lw=2.2, analytical_ls="--", ylim=None, lettersize=12, figsize=(7, 5), add_colorbar=True):
+    fr_tag = np.asarray(fr_tag)
+    empirical_psd = np.asarray(empirical_psd)
+    analytical_psd = np.asarray(analytical_psd)
+    control_param = np.asarray(control_param)
+
+    if empirical_psd.shape != analytical_psd.shape:
+        raise ValueError("empirical_psd and analytical_psd must have the same shape.")
+    if empirical_psd.shape[1] != control_param.shape[0]:
+        raise ValueError("Number of PSD profiles must match length of control_param.")
+
+    norm = mcolors.Normalize(vmin=np.min(control_param), vmax=np.max(control_param))
+    cmap_obj = cm.get_cmap(cmap)
+    curve_colors = [cmap_obj(norm(c)) for c in control_param]
+
+    fig, ax = plt.subplots(figsize=figsize)
+
+    for i, col in enumerate(curve_colors):
+        ax.loglog(
+            fr_tag,
+            empirical_psd[:, i],
+            color=col,
+            alpha=empirical_alpha,
+            linewidth=empirical_lw,
+            zorder=1,
+        )
+        ax.loglog(
+            fr_tag,
+            analytical_psd[:, i],
+            analytical_ls,
+            color=col,
+            alpha=analytical_alpha,
+            linewidth=analytical_lw,
+            zorder=2,
+        )
+
+    ax.set_xlabel(xlabel, fontsize=lettersize)
+    ax.set_ylabel(ylabel, fontsize=lettersize)
+    ax.tick_params(axis="both", labelsize=lettersize)
+
+    if ylim is not None:
+        ax.set_ylim(ylim)
+
+    if add_colorbar:
+        sm = cm.ScalarMappable(norm=norm, cmap=cmap_obj)
+        sm.set_array([])
+        cbar = fig.colorbar(sm, ax=ax, pad=0.02)
+        cbar.set_label("Control parameter", fontsize=lettersize)
+        cbar.ax.tick_params(labelsize=lettersize)
+
+    plt.tight_layout()
+    return fig, ax
+
+# analytical PSD to empirical shape fitting
+from shape_collapse_helpers import fit_two_mode_psd_array, plot_all_empirical_vs_fitted_psds, \
+    fit_two_mode_psd_array_fslow_only, fit_two_mode_psd_array_joint, fit_two_mode_psd_array_vertex, \
+    collapse_vertex_fitted_psds
+
+joint_fit = fit_two_mode_psd_array_joint(freqs=fr_tag, psd_arr=empirical_psd.T, fit_band=(0.01, 0.5))
+
+print("A =", joint_fit["A"],"; w =", joint_fit["w"], "; f_fast =", joint_fit["f_fast"])
+print("tau_fast =", joint_fit["tau_fast"])
+print("Global log-R2 =", joint_fit["r2_log_global"])
+print("Mean per-region log-R2 =", joint_fit["mean_r2_log_per_region"])
+
+fitted_psd_arr = np.vstack([joint_fit["psd_fit_arr"]])
+analytical_collapsed = ((fitted_psd_arr.T - yi) / g_fit[None, :]) + yi
+
+fig, ax = plot_empirical_vs_analytical_psds(fr_tag, psd_collapsed_org, analytical_collapsed,
+    control_param=control_param, ylabel="Power (Index)", ylim=(0.8, 11), lettersize=12)
+
+plt.figure(figsize=(7, 5))
+for i in range(psd_collapsed_org.shape[0]):
+    plt.loglog(fr_tag, psd_collapsed_org.T[i], alpha=0.2)
+    plt.loglog(fr_tag, analytical_collapsed.T[i], "--", alpha=0.9)
+plt.xlabel("Frequency (Hz)")
+plt.ylabel("Collapsed PSD")
+plt.tight_layout()
+
+fits = fit_two_mode_psd_array(fr_tag, empirical_psd.T, fit_band=(0.01, 0.5))
+fitted_psd_arr = np.vstack([fit["psd_fit"] for fit in fits])
+
+fig, ax = plot_empirical_vs_analytical_psds(fr_tag, empirical_psd, fitted_psd_arr.T,
+    control_param=control_param, ylabel="Power (Index)", ylim=(0.8, 11), lettersize=14)
+
+# Collapse both empirical and analytical PSDs with the same scaling
+empirical_collapsed = empirical_psd / g_fit[None, :]
+fitted_psd_arr = np.vstack([fit["psd_fit"] for fit in fits])
+analytical_collapsed = ((fitted_psd_arr.T - yi) / g_fit[None, :]) + yi
+
+fig, ax = plot_empirical_vs_analytical_psds(fr_tag, psd_collapsed_org, analytical_collapsed,
+    control_param=control_param, ylabel="Power (Index)", ylim=(0.8, 11), lettersize=14)
+
+fits = fit_two_mode_psd_array_fslow_only(freqs=fr_tag, psd_arr=empirical_psd.T, fit_band=(0.01, 0.5),
+                                        A=2.5, w=0.005, f_fast=1.4)
+fitted_psd_arr = np.vstack([fit["psd_fit"] for fit in fits])
+
+fig, ax = plot_empirical_vs_analytical_psds(fr_tag, empirical_psd, fitted_psd_arr.T,
+    control_param=control_param, ylabel="Power (Index)", ylim=(0.8, 11), lettersize=14)
+
+analytical_collapsed = ((fitted_psd_arr.T - yi) / g_fit[None, :]) + yi
+
+fig, ax = plot_empirical_vs_analytical_psds(fr_tag, psd_collapsed_org, analytical_collapsed,
+    control_param=control_param, ylabel="Power (Index)", ylim=(0.8, 11), lettersize=14)
+
+fits = fit_two_mode_psd_array_vertex(freqs=fr_tag, psd_arr=empirical_psd.T, fit_band=(0.01, 0.5), w=0.005, f_fast=1.4,
+                                f_vertex=xi, p_vertex=yi, mode="joint", enforce_vertex_exact=True)
+fitted_psd_arr = np.vstack([fit["psd_fit"] for fit in fits])
+
+fig, ax = plot_empirical_vs_analytical_psds(fr_tag, empirical_psd, fitted_psd_arr.T,
+    control_param=control_param, ylabel="Power (Index)", ylim=(0.8, 11), lettersize=14)
+
+#plot_all_empirical_vs_fitted_psds(fr_tag, empirical_psd, fits)
+
+analytical_collapsed = ((fitted_psd_arr.T - yi) / g_fit[None, :]) + yi
+
+fig, ax = plot_empirical_vs_analytical_psds(fr_tag, psd_collapsed_org, analytical_collapsed,
+    control_param=control_param, ylabel="Power (Index)", ylim=(0.8, 11), lettersize=14)
 
 # Load results from simulations on top of the empirical and shape collapse analysis
 sim_G = np.array([0.096, 0.097, 0.098, 0.0985, 0.099, 0.0995]) * 0.2 * 49.88
@@ -223,15 +345,18 @@ simulated_mean_psd_arr = np.array([np.mean(np.array(simulated_mean_s_0_096), axi
                                    ])
 
 sim_mean_psd = simulated_mean_psd_arr
-#plt.figure()
-#plt.loglog(fr_tag, sim_mean_psd.T)
+plt.figure()
+plt.loglog(fr_tag, sim_mean_psd.T)
+
+plt.figure()
+plt.plot(fr_tag, sim_mean_psd.T)
 
 # compute positive (only) area under the curve of the highest empirical and simulated spectra
 min_ind = np.argmin(np.abs(fr_tag - xi)) # index in vertex
 
 sim_mean_psd_tag = np.transpose(np.array([sim_mean_psd[i] - (sim_mean_psd[i][min_ind]) for i in range(len(sim_G))]))
-#plt.figure()
-#plt.plot(fr_tag, sim_mean_psd_tag)
+plt.figure()
+plt.plot(fr_tag, sim_mean_psd_tag)
 
 auc_sim_psd_max = np.trapz(sim_mean_psd_tag[:min_ind,-1])
 
@@ -244,12 +369,27 @@ sim_result = least_squares(residuals, initial_guess, args=(simulated_mean_psd_ar
 sim_optimal_params = sim_result.x
 sim_g_fit = g_model(sim_G, sim_optimal_params)
 
+# Try no HRF setting for the simulation fitting
+offset = 0.06 # the offset with HRF - 0.2
+exponent = 0.5 # with HRF - 0.24
+control_param = 1 - (offset/falff)**(1/exponent)
+result = least_squares(residuals, initial_guess, args=(psd, control_param))
+no_hrf_optimal_params = result.x
+no_hrf_g_fit = g_model(control_param, no_hrf_optimal_params)
+# end no HRF
+
 simulated_mean_psd_arr_tag = np.array([simulated_mean_psd_arr[i] - (simulated_mean_psd_arr[i][min_ind])
                                        for i in range(len(sim_G))])
+additional_exponent = 2.5 # for best fit use 2.5, to show base result (i.e. no fitting exponent) use 1
+scale_fitter = np.array([(1 / val)**additional_exponent for val in sim_g_fit])
+simulated_mean_psd_arr_tag_scaled = np.array([simulated_mean_psd_arr_tag[i]*scale_fitter[i] for i in range(len(sim_G))])
 
-scale_fitter = np.array([(1 / val)**1.5 for val in sim_g_fit])
-simulated_mean_psd_arr_tag_scaled = np.array([simulated_mean_psd_arr_tag[i]*scale_fitter[i] / sim_g_fit[i]
-                                              for i in range(len(sim_G))])
+#no_hrf_scale_fitter = np.array([(1 / val) for val in no_hrf_g_fit])
+#simulated_mean_psd_arr_tag_scaled = np.array([simulated_mean_psd_arr_tag[i]*no_hrf_scale_fitter[i] for i in range(len(sim_G))])
+
+# scale_fitter = np.array([(1 / val)**1.5 for val in sim_g_fit])
+# simulated_mean_psd_arr_tag_scaled = np.array([simulated_mean_psd_arr_tag[i]*scale_fitter[i] / sim_g_fit[i]
+#                                               for i in range(len(sim_G))])
 plt.figure(12, figsize=(8, 6))
 plt.plot(fr_tag,simulated_mean_psd_arr_tag_scaled.T, linewidth=8)  #, color='darkred')
 
@@ -265,7 +405,9 @@ lines_sim = plt.loglog(fr_tag,simulated_mean_psd_arr_rescaled[1:5,:].T*5, linewi
 plt.xlabel('Freq', fontsize=lettersize)
 plt.ylabel('Power (Index)', fontsize=lettersize)
 plt.ylim(0.8, 11)
-plt.legend(lines_sim, np.around(sim_G, 2))
+#plt.legend(lines_sim, np.around(sim_G, 2))
+new_labels = ['0.96', '0.97', '0.98', '0.99']
+plt.legend(lines_sim, new_labels)
 plt.xticks(fontsize=lettersize)
 plt.yticks(fontsize=lettersize)
 plt.tight_layout()
