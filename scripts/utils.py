@@ -1,30 +1,24 @@
-from scipy import signal
+"""Compatibility wrapper for legacy scripts importing filtering helpers from ``utils``."""
 
-# utils for filtering
-def butter_filter(cutoff, fs, order=5, btype='low'):
-    nyq = 0.5 * fs
-    normal_cutoff = cutoff / nyq
-    b, a = signal.butter(order, normal_cutoff, btype=btype, analog=False, output='ba')
-    return b, a
+from pathlib import Path
+import sys
 
-def butter_lowpass_filter(data, cutoff, fs, order=5):
-    b, a = butter_filter(cutoff, fs, order=order, btype='low')
-    y = signal.lfilter(b, a, data) # lfilter
-    return y
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
-def butter_highpass_filter(data, cutoff, fs, order=5):
-    b, a = butter_filter(cutoff, fs, order=order, btype='high')
-    y = signal.lfilter(b, a, data)
-    return y
+from infrastructure.filters import (
+    butter_bandpass,
+    butter_bandpass_filter,
+    butter_filter,
+    butter_highpass_filter,
+    butter_lowpass_filter,
+)
 
-def butter_bandpass(lowcut, highcut, fs, order=5):
-        nyq = 0.5 * fs
-        low = lowcut / nyq
-        high = highcut / nyq
-        sos = signal.butter(order, [low, high], analog=False, btype='band', output='sos')
-        return sos
-
-def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
-        sos = butter_bandpass(lowcut, highcut, fs, order=order)
-        y = signal.sosfilt(sos, data)
-        return y
+__all__ = [
+    "butter_bandpass",
+    "butter_bandpass_filter",
+    "butter_filter",
+    "butter_highpass_filter",
+    "butter_lowpass_filter",
+]
