@@ -73,3 +73,20 @@ logs/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+# Scientific data and generated outputs
+/data/*
+!/data/README.md
+/results/*
+!/results/README.md
+/figures/*
+!/figures/README.md
+*.pkl
+*.pickle
+*.zip
+*.nii
+*.nii.gz
+*.mat
+*.eps
+*.bak
+* - Copy.*
