@@ -1,4 +1,5 @@
 from os.path import join
+from pathlib import Path
 import pickle
 import sys
 import matplotlib.pyplot as plt
@@ -48,7 +49,8 @@ def transform_subjects_mat_to_pickles(path_str, filename):
             pickle.dump(sub_data, handle)  #, protocol=pickle.HIGHEST_PROTOCOL)
         sub_ind += 1
 
-path_str = 'data'
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+path_str = _REPO_ROOT / 'data'
 mat_filename = 'data_Rest1_1_TR_300.mat'
 #transform_subjects_mat_to_pickles(path_str, mat_filename)
 
