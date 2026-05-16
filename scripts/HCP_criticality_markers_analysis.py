@@ -135,7 +135,6 @@ def plot_parcellation(mesh, parcellation, analysis_results, hemi='L', vmin=-0.01
             save_path = f'fALFF_cortical_surface_{hemi_key}_{view_mode}{tsnr_tag}.eps'
         plt.savefig(save_path, format='eps', bbox_inches='tight')
 
-path_str = 'data'
 filenamestr = 'criticality_markers_subject_n'
 #filenamestr = 'tsnr_clean_criticality_markers_subject_n'
 #filenamestr = 'HS_cov_corrected_criticality_markers_subject_n'
@@ -664,28 +663,8 @@ def compute_mean_across_simulations(filename_base, filename_exts, measure):
     return mean_measure_vals
 
 path_str = 'results'
-filename_base_0 = join(path_str, 'simulation_N400_stats_per_G_') # first simulation in G range of ~0.95 to 0.99 spread across 180 ROIs without HRF conv
-filename_base_1 = join(path_str, 'simulation_N400_stats_per_G_full_range_') # second simulation in G range of ~0.8 to 0.99 divided to 40 points without HRF conv
-filename_base_2 = join(path_str, 'simulation_N400_stats_with_hrf_per_G_full_range_') # third simulation in G range of ~0.8 to 0.99 divided to 40 points with HRF conv
-filename_base_3 = join(path_str, 'simulation_N400_stats_with_hrf_per_180_ROI_')
-filename_base_4 = join(path_str, 'simulation_N400_stats_with_hrf_per_180_ROI_power_law_spacing_')
-filename_base_5 = join(path_str, 'simulation_N400_stats_with_hrf_after_local_mean_per_180_ROI_') # average on local neurons and then apply HRF - Rafi's way
-filename_base_6 = join(path_str, 'simulation_N400_stats_with_hrf_logspace10_per_180_ROI_') # based on use of logspace with decreasing spacing as G grows
-filename_base_7 = join(path_str, 'simulation_N400_stats_no_hrf_logspace10_per_180_ROI_')
-filename_base_8 = join(path_str, 'simulation_N400_stats_with_hrf_logspace10_per_40_ROI_')
-filename_base_9 = join(path_str, 'simulation_N400_stats_no_hrf_logspace_Oren_A_0_06_Alpha_0_5_180_ROI_')
 filename_base_10 = join(path_str, 'simulation_N400_stats_no_hrf_logspace_Oren_A_0_06_Alpha_0_5_180_ROI_Ex2_')
 filename_base = filename_base_10
-filename_extensions_0 = ['20241204_s1', '20241205_s2', '20241207_s3']
-filename_extensions_1 = ['s0','s1', 's2', 's3','s4']
-filename_extensions_2 = ['s0','s1']
-filename_extensions_3 = ['s0']
-filename_extensions_4 = ['s0']
-filename_extensions_5 = ['s0','s1']
-filename_extensions_6 = ['s0']
-filename_extensions_7 = ['s0']
-filename_extensions_8 = ['s0']
-filename_extensions_9 = ['s0','s1','s2','s3','s4']
 filename_extensions_10 = ['s0','s1','s2','s3','s4']
 filename_extensions = filename_extensions_10
 simulated_mean_fALFF = compute_mean_across_simulations(filename_base, filename_extensions, 'mean_fALFF')
