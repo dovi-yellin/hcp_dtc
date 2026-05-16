@@ -1,25 +1,20 @@
 from os.path import join
-import numpy as np
+from pathlib import Path
 import pickle
-import matplotlib.pyplot as plt
 import scipy.stats as stats
 from scipy.stats import pearsonr
+import numpy as np
 import pandas as pd
 from itertools import combinations
 
-###### Move the following plotting method to separate script method ######
-import numpy as np
-import matplotlib
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import matplotlib.colors as mcolors
-#from matplotlib.colors import ListedColormap
 
 from nilearn import plotting
 import hcp_utils as hcp
 
-import numpy.ma as ma
 std_fontsize = 14
 
 def add_thresholded_colorbar(fig, cmap_obj, full_vmin, full_vmax, vmin, vmax, cax_position=[0.88, 0.20, 0.03, 0.60]):
@@ -146,6 +141,9 @@ filenamestr = 'criticality_markers_subject_n'
 #filenamestr = 'HS_cov_corrected_criticality_markers_subject_n'
 
 tsnr_filenamestr = 'tsnr_metrics_subject_n'
+
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+path_str = _REPO_ROOT / 'data'
 
 hierarchy_filename = 'Glasser_2016_Table_my_Hierarchy_2.csv'
 df_glasser = pd.read_csv(join(path_str, hierarchy_filename))
@@ -482,7 +480,7 @@ plt.figure(figsize=(8, 5))
 plt.bar(labels_for_pairwise, r_sq_values, capsize=8, color='skyblue', edgecolor='black', alpha=0.7)
 plt.ylabel('Variance Explained ($R^2$)')
 #plt.title('Comparison of Correlation and Noise Across Conditions')
-plt.ylim(0, 1.3) # Extra room for error bars
+plt.ylim(0, 0.7) # Extra room for error bars
 plt.grid(axis='y', linestyle='--', alpha=0.5)
 plt.show()
 

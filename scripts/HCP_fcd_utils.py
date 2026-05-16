@@ -32,8 +32,6 @@ hrf_times = np.arange(0, 20, 1)
 #hrf_signal = hrf(hrf_times)
 hrf_signal = gamma_hrf(hrf_times)
 
-
-
 subject_filename = 'hcp_subject_n'
 def transform_subjects_mat_to_pickles(path_str, filename):
     import mat73
