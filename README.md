@@ -2,7 +2,7 @@
 
 `hcp_dtc` contains analysis and modeling code for studying spatial variation in distance to criticality (DTC) across the human cortex using large-scale resting-state fMRI data. The repository combines empirical analyses of HCP-derived measures, including fALFF and rFCD, with random recurrent rate-model simulations used to infer cortical proximity to dynamical transitions.
 
-The project builds on modeling ideas developed in `critical_slowing_down_in_free_recall`, but this repository is organized around the HCP cortical DTC manuscript and its associated analysis scripts. The central goal is to quantify heterogeneous cortical DTC and compare empirical fMRI dynamics with network simulations.
+The project builds on modeling ideas developed in [`critical_slowing_down_in_free_recall`](https://github.com/dovi-yellin/critical_slowing_down_in_free_recall), but this repository is organized around the HCP cortical DTC manuscript and its associated analysis scripts. The central goal is to quantify heterogeneous cortical DTC and compare empirical fMRI dynamics with network simulations.
 
 ## Overview
 
@@ -52,7 +52,7 @@ pip install -r requirements.txt
 
 Start with the manuscript figure table above and the analysis entry points in `scripts/`. The manuscript scripts assume that the expected HCP-derived local data files are already present under `data/`.
 
-For a lightweight first run, this repository still needs a small `examples/` or `demos/` workflow that simulates a random recurrent network without requiring HCP data. That example can be adapted from the related `critical_slowing_down_in_free_recall` examples.
+For a lightweight first run, this repository still needs a small `examples/` or `demos/` workflow that simulates a random recurrent network without requiring HCP data. That example can be adapted from the related [`critical_slowing_down_in_free_recall` examples](https://github.com/dovi-yellin/critical_slowing_down_in_free_recall/tree/main/examples).
 
 ## Citation to related Project
 
