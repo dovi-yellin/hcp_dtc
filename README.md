@@ -49,11 +49,11 @@ The `demos/` folder includes self-contained examples on: (a) how to run a short 
 
 ## Citation to related Project
 ```
-@article{yellin2025critical,
-  title={Adaptive proximity to criticality underlies amplification of ultra-slow fluctuations during free recall},
-  authors={Yellin, Dovi and Siegel, Noam and Malach, Rafael and Shriki, Oren},
-  journal={biorxiv},
-  year={2025},
-  doi={10.1101/2023.02.24.529043}
+@article{yellin2026hcp_dtc,
+  title={A cortical gradient of distance to criticality governs large-scale resting-state fMRI dynamics},
+  authors={Yellin, D. and Simony, E. and Malach, R. and Shriki, O.},
+  journal={bioRxiv},
+  year={2026},
+  doi={10.64898/2026.05.21.726898}
 }
 ```
