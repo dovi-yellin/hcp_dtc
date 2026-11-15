@@ -77,6 +77,10 @@ dmypy.json
 # Scientific data and generated outputs
 /data/*
 !/data/README.md
+!/data/figure_S3/
+/data/figure_S3/*
+!/data/figure_S3/tau120_network_means.csv
+!/data/figure_S3/provenance.json
 /results/*
 !/results/README.md
 /figures/*

@@ -1,0 +1,2 @@
+# Keep the checksummed simulation summary identical across operating systems.
+data/figure_S3/*.csv text eol=lf
